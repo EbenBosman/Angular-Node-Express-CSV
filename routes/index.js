@@ -1,45 +1,85 @@
 var express = require('express'),
     router = express.Router(),
-    formidable = require('formidable'),
-    http = require('http'),
-    util = require('util'),
+    multer = require('multer'),
+    upload = multer({dest: 'public/upload/'}),
     fs = require('fs'),
-    path = require("path"),
+    path = require('path'),
+    pathToUpload = path.join(__dirname, '../public/upload'),
     csv = require("fast-csv");
-
-/* GET home page. */
-router.get('/', function (req, res, next) {
+router.get('/', function (req, res) {
     res.render('index', {exercise: 'CSV Upload'});
 });
 
-router.post('/upload', function (req, res, next) {
-    var form = new formidable.IncomingForm();
+router.post('/upload', upload.single('file'), calculateTotals, function (req, res) {
 
-    form
-        .parse(req, function (err, fields, files) {
-            console.log(form);
-        })
-        .on('end', function (fields, files) {
-            /* Temporary location of our uploaded file */
-            var temp_path = this.openedFiles[0].path;
-            /* The file name of the uploaded file */
-            var file_name = this.openedFiles[0].name;
-
-            var stream = fs.createReadStream(path.resolve(temp_path, file_name));
-
-            var csvStream = csv.format({headers: true, quoteColumns: [true], quoteHeaders: [false, true]})
-                .on("data", function (data) {
-                    console.log(data);
-                })
-                .on("end", function () {
-                    console.log("done");
-
-                    res.sendStatus(200);
-                });
-
-            stream.pipe(csvStream);
-
-        });
+    res.sendStatus(200);
 });
 
 module.exports = router;
+
+function calculateTotals(req, res, next) {
+    processAllFilesInUploadFolder(processCsvLoansFile);
+
+    processAllFilesInUploadFolder(cleanUploadFolder);
+
+    next();
+}
+
+function processAllFilesInUploadFolder(callback) {
+    fs.readdir(pathToUpload, function (err, items) {
+
+        if (!items || items.length == 0)
+            return;
+
+        for (var i = 0; i < items.length - 1; i++) {
+            callback(items[i]);
+        }
+    });
+}
+
+function processCsvLoansFile(file) {
+    var pathToFile = getFullPathTo(file);
+
+    var stream = fs.createReadStream(pathToFile);
+
+    var RawLoans = [];
+
+    var csvStream = csv()
+        .on("data", function (data) {
+            RawLoans.push(data);
+        })
+        .on("end", function () {
+            aggregateData(RawLoans);
+        });
+
+    stream.pipe(csvStream);
+}
+
+function aggregateData(rawLoans) {
+
+    // var headerItems = rawLoans[0];
+    //
+    // headerItems.forEach(function (headerItem, headerItemIndex) {
+    // });
+    //
+    // rawLoans.forEach(function (item, index) {
+    //
+    // });
+    //
+    // writeAggregatedData(headerItems, "");
+}
+
+function writeAggregatedData(headerItems, data) {
+
+}
+
+function cleanUploadFolder(file) {
+    var pathToFile = getFullPathTo(file);
+
+    if (fs.existsSync(path))
+        fs.unlink(pathToFile);
+}
+
+function getFullPathTo(file) {
+    return path.join(pathToUpload, file);
+}

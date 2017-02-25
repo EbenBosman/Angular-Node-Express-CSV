@@ -13,7 +13,6 @@ block content
             input(type='file', nv-file-select='', uploader='uploader', accept='.csv')
         div.col-md-9(style='margin-bottom: 40px')
             h3 Upload queue
-            p Queue length: {{ uploader.queue.length }}
             table.table
                 thead
                     tr
@@ -35,8 +34,3 @@ block content
                             button.btn.btn-danger.btn-xs(type='button', ng-click='item.remove()')
                                 span.glyphicon.glyphicon-trash
                                 |  Remove
-            div
-                div
-                    | Queue progress:
-                    .progress(style='')
-                        .progress-bar(role='progressbar', ng-style="{ 'width': uploader.progress + '%' }")
