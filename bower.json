@@ -1,0 +1,24 @@
+{
+  "name": "CSV-Exercise",
+  "description": "This exercise is to upload a CSV file, parse it and write the result",
+  "main": "",
+  "authors": [
+    "Eben Bosman <eben.bosman@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "public/components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.6.2",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.1.1",
+    "angular-file-upload": "^2.5.0"
+  }
+}

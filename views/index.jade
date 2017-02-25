@@ -1,0 +1,42 @@
+extends layout
+
+block content
+    h1 #{exercise}
+    h3 This exercise is to upload a CSV file, parse it and write the result
+
+    br
+    br
+
+    div(ng-controller='csvCtrl')
+        div.col-md-3
+            h3 Select CSV File
+            input(type='file', nv-file-select='', uploader='uploader', accept='.csv')
+        div.col-md-9(style='margin-bottom: 40px')
+            h3 Upload queue
+            p Queue length: {{ uploader.queue.length }}
+            table.table
+                thead
+                    tr
+                        th(width='50%') Name
+                        th Actions
+                tbody
+                    tr(ng-repeat='item in uploader.queue')
+                        td
+                            strong {{ item.file.name }}
+                        td
+                            button.btn.btn-success.btn-xs(type='button', ng-click='item.upload()', ng-disabled='item.isReady || item.isUploading || item.isSuccess')
+                                span.glyphicon.glyphicon-upload
+                                |  Upload
+                            span  &nbsp;
+                            button.btn.btn-warning.btn-xs(type='button', ng-click='item.cancel()', ng-disabled='!item.isUploading')
+                                span.glyphicon.glyphicon-ban-circle
+                                |  Cancel
+                            span  &nbsp;
+                            button.btn.btn-danger.btn-xs(type='button', ng-click='item.remove()')
+                                span.glyphicon.glyphicon-trash
+                                |  Remove
+            div
+                div
+                    | Queue progress:
+                    .progress(style='')
+                        .progress-bar(role='progressbar', ng-style="{ 'width': uploader.progress + '%' }")

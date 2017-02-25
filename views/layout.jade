@@ -1,0 +1,16 @@
+doctype html
+html
+    head
+        title=exercise
+        link(rel='stylesheet', href = '/components/bootstrap/dist/css/bootstrap.css')
+        link(rel='stylesheet', href='/stylesheets/style.css')
+
+    body(ng-app="csvApp")
+        script(src='/components/jquery/dist/jquery.js')
+        script(src='/components/bootstrap/dist/js/bootstrap.js')
+        script(src='/components/angular/angular.js')
+        script(src='/components/angular-file-upload/dist/angular-file-upload.js')
+
+        block content
+
+        script(src='/javascripts/csvApp.js')
