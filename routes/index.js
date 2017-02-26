@@ -6,40 +6,40 @@ var express = require('express'),
     path = require('path'),
     pathToUpload = path.join(__dirname, '../public/upload'),
     csv = require("fast-csv"),
-    enumerable = require('linq');
+    enumerable = require("linq"),
+    json2csv = require("json2csv");
 
 router.get('/', function (req, res) {
     res.render('index', {exercise: 'CSV Upload'});
 });
 
 router.post('/upload', upload.single('file'), calculateTotals, function (req, res) {
-
     res.sendStatus(200);
 });
 
 module.exports = router;
 
 function calculateTotals(req, res, next) {
-    processAllFilesInUploadFolder(processCsvLoansFile);
+    processAllFilesInUploadFolder(processCsvLoansFile, res);
 
     processAllFilesInUploadFolder(cleanUploadFolder);
 
     next();
 }
 
-function processAllFilesInUploadFolder(callback) {
+function processAllFilesInUploadFolder(callback, res) {
     fs.readdir(pathToUpload, function (err, items) {
 
         if (!items || items.length == 0)
             return;
 
         for (var i = 0; i < items.length - 1; i++) {
-            callback(items[i]);
+            callback(items[i], res);
         }
     });
 }
 
-function processCsvLoansFile(file) {
+function processCsvLoansFile(file, res) {
     var pathToFile = getFullPathTo(file);
 
     var stream = fs.createReadStream(pathToFile);
@@ -51,9 +51,9 @@ function processCsvLoansFile(file) {
             RawLoans.push(data);
         })
         .on("end", function () {
-            var x = aggregateData(RawLoans);
+            var aggregatedData = aggregateData(RawLoans);
 
-            var xx = "";
+            writeAggregatedData(aggregatedData, res);
         });
 
     stream.pipe(csvStream);
@@ -95,7 +95,7 @@ function aggregateData(rawLoans) {
 
             simplifiedDate.forEach(function (item, index) {
                 if (item.MSISDN === isdn && item.Network === network && item.Product === product && item.Date === date) {
-                    sum += parseFloat(item.Amount);
+                    sum = sum + parseFloat(item.Amount);
                 }
             });
 
@@ -127,8 +127,13 @@ function replaceLastInstanceOfChar(jsonString) {
     return jsonString.replace(/,\s*$/, "");
 }
 
-function writeAggregatedData(headerItems, data) {
-
+function writeAggregatedData(aggregatedLoans, res) {
+    json2csv({data: aggregatedLoans, fields: ['MSISDN', 'Network', 'Product', 'Date', 'Amount']}, function (err, csv) {
+        res.setHeader('Content-Disposition', 'attachment; filename=Output.csv');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Length', csv.length);
+        res.download(csv, 'binary');
+    });
 }
 
 function cleanUploadFolder(file) {
